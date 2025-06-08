@@ -1,0 +1,100 @@
+/**
+ * Micro:bit kiterjesztés az egér képernyő közepére mozgatásához
+ */
+
+//% color=#0fbc11 icon="\uf245" block="Egér Vezérlő"
+//% groups=['Egér']
+namespace egerVezerto {
+    
+    let screenWidth = 1920;  // Alapértelmezett képernyő szélesség
+    let screenHeight = 1080; // Alapértelmezett képernyő magasság
+    
+    /**
+     * Beállítja a képernyő felbontását
+     * @param width képernyő szélessége pixelben
+     * @param height képernyő magassága pixelben
+     */
+    //% block="képernyő méret beállítása szélesség %width magasság %height"
+    //% group="Egér"
+    //% width.min=800 width.max=3840 width.defl=1920
+    //% height.min=600 height.max=2160 height.defl=1080
+    export function kepernyo_meret_beallitas(width: number, height: number): void {
+        screenWidth = width;
+        screenHeight = height;
+    }
+    
+    /**
+     * Az egeret a képernyő közepére mozgatja
+     */
+    //% block="egér középre mozgatása"
+    //% group="Egér"
+    export function eger_kozepre(): void {
+        let centerX = Math.floor(screenWidth / 2);
+        let centerY = Math.floor(screenHeight / 2);
+        
+        // Szimuláljuk az egér mozgatást a képernyő közepére
+        serial.writeLine("MOUSE_MOVE:" + centerX + "," + centerY);
+        
+        // Visszajelzés LED-ekkel
+        basic.showIcon(IconNames.Yes);
+        basic.pause(500);
+        basic.clearScreen();
+    }
+    
+    /**
+     * Az egeret adott koordinátákra mozgatja
+     * @param x X koordináta
+     * @param y Y koordináta
+     */
+    //% block="egér mozgatása X %x Y %y pozícióra"
+    //% group="Egér"
+    //% x.min=0 x.max=3840
+    //% y.min=0 y.max=2160
+    export function eger_mozgatas(x: number, y: number): void {
+        serial.writeLine("MOUSE_MOVE:" + x + "," + y);
+        
+        // Rövid visszajelzés
+        led.plot(2, 2);
+        basic.pause(100);
+        led.unplot(2, 2);
+    }
+    
+    /**
+     * Egérkattintás szimulálása
+     * @param button melyik egérgomb (0=bal, 1=jobb, 2=középső)
+     */
+    //% block="egérkattintás %button gombbal"
+    //% group="Egér"
+    //% button.min=0 button.max=2 button.defl=0
+    export function eger_kattintas(button: number): void {
+        serial.writeLine("MOUSE_CLICK:" + button);
+        
+        // Villogás visszajelzésként
+        basic.showLeds(`
+            . . # . .
+            . # # # .
+            # # # # #
+            . # # # .
+            . . # . .
+        `);
+        basic.pause(200);
+        basic.clearScreen();
+    }
+}
+
+// Fő program példa
+input.onButtonPressed(Button.A, function () {
+    // A gomb megnyomásakor az egeret a képernyő közepére mozgatjuk
+    egerVezerto.eger_kozepre();
+})
+
+input.onButtonPressed(Button.B, function () {
+    // B gomb megnyomásakor bal egérkattintás
+    egerVezerto.eger_kattintas(0);
+})
+
+input.onButtonPressed(Button.AB, function () {
+    // A+B gombok együttes megnyomásakor képernyőméret beállítása 1920x1080-ra
+    egerVezerto.kepernyo_meret_beallitas(1920, 1080);
+    basic.showString("SET");
+})
